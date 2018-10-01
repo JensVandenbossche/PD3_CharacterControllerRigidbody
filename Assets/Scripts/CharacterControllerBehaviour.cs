@@ -14,12 +14,16 @@ public class CharacterControllerBehaviour : MonoBehaviour {
     [SerializeField]
     private float _acceleration = 3;
 
+    [SerializeField]
+    private float _jumpHeight = 1;
+
     private CapsuleCollider _capsuleCollider;
     private Rigidbody _rigidbody;
 
-    private bool _jump = false;
+    private bool _jump;
     private Vector3 _movement;
 
+    bool isGrounded = false;
     private Vector3 _velocity;
 
 	void Start ()
@@ -44,13 +48,23 @@ public class CharacterControllerBehaviour : MonoBehaviour {
     private void FixedUpdate()
     {
         _isGroundedNeedsUpdate = true;
+        ApplyGround();
+        ApplyJump();
         ApplyMovement();
         _rigidbody.MovePosition(_rigidbody.position + _velocity * Time.deltaTime);
     }
 
+    private void ApplyGround()
+    {
+        if (_isGrounded)
+        {
+            _velocity -= Vector3.Project(_velocity, Physics.gravity);
+        }
+    }
+
     private void ApplyMovement()
     {
-        if (IsGrounded())
+        if (/*IsGrounded()*/ _isGrounded)
         {
             Vector3 xzForward = Vector3.Scale(_absoluteTransform.forward, new Vector3(1, 0, 1));
             Quaternion relativeRotation = Quaternion.LookRotation(xzForward);
@@ -60,25 +74,56 @@ public class CharacterControllerBehaviour : MonoBehaviour {
         }
     }
 
+    private void ApplyJump()
+    {
+        if (_isGrounded && _jump)
+        {
+            _velocity.y += Mathf.Sqrt(2 * Physics.gravity.magnitude * _jumpHeight);
+            _jump = false;
+        }
+    }
+
+    private HashSet<GameObject> _ground = new HashSet<GameObject>();
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        foreach(ContactPoint contact in collision.contacts)
+        {
+            if (Vector3.Dot(contact.normal, Vector3.up) > 0.5)
+            {
+                _isGrounded = true;
+                _ground.Add(collision.gameObject);
+            }
+        }
+    }
+
+    private void OnCollisionExit(Collision collision)
+    {
+        if (_ground.Remove(collision.gameObject))
+        {
+            _isGrounded = (_ground.Count > 0);
+        }
+    }
+
     bool _isGrounded = false;
     bool _isGroundedNeedsUpdate = true;
 
-    private bool IsGrounded()
-    {
-        //raycast // spherecast // collider
+    //private bool IsGrounded()
+    //{
+    //    //raycast // spherecast // collider
 
-        if (_isGroundedNeedsUpdate)
-        {
-            Vector3 rayCenter = _capsuleCollider.center;
-            float rayLength = _capsuleCollider.bounds.extents.y + 0.1f;
-            float sphereRadius = _capsuleCollider.radius * 0.9f;
+    //    if (_isGroundedNeedsUpdate)
+    //    {
+    //        Vector3 rayCenter = _capsuleCollider.center;
+    //        float rayLength = _capsuleCollider.bounds.extents.y + 0.1f;
+    //        float sphereRadius = _capsuleCollider.radius * 0.9f;
 
-            RaycastHit hitInfo;
-            bool isGrounded = Physics.SphereCast(rayCenter, sphereRadius, Vector3.down, out hitInfo, rayLength);
+    //        RaycastHit hitInfo;
+    //        bool isGrounded = Physics.SphereCast(rayCenter, sphereRadius, Vector3.down, out hitInfo, rayLength);
 
-            _isGrounded = isGrounded && Vector3.Dot(hitInfo.normal, Vector3.up) > 0.5; //check angle between ray and surface
-            _isGroundedNeedsUpdate = false;
-        }
-        return _isGrounded;
-    }
+    //        _isGrounded = isGrounded && Vector3.Dot(hitInfo.normal, Vector3.up) > 0.5; //check angle between ray and surface
+    //        _isGroundedNeedsUpdate = false;
+    //    }
+    //    return _isGrounded;
+    //}
 }

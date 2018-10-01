@@ -249,8 +249,8 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 534669902}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: -10}
+  m_LocalRotation: {x: -0.25544667, y: 0.00057703117, z: -0.0001531453, w: -0.96682304}
+  m_LocalPosition: {x: -0.97825295, y: 13.729447, z: -23.020775}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -444,6 +444,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _absoluteTransform: {fileID: 534669905}
   _acceleration: 3
+  _jumpHeight: 1
 --- !u!1 &1925337786
 GameObject:
   m_ObjectHideFlags: 0
