@@ -43,6 +43,8 @@ public class CharacterControllerBehaviour : MonoBehaviour {
 
     private void FixedUpdate()
     {
+        _isGroundedNeedsUpdate = true;
+        ApplyMovement();
         _rigidbody.MovePosition(_rigidbody.position + _velocity * Time.deltaTime);
     }
 
@@ -58,14 +60,25 @@ public class CharacterControllerBehaviour : MonoBehaviour {
         }
     }
 
+    bool _isGrounded = false;
+    bool _isGroundedNeedsUpdate = true;
+
     private bool IsGrounded()
     {
-        Vector3 rayCenter = _capsuleCollider.center;
-        float rayLength = _capsuleCollider.bounds.extents.y + 0.1f;
+        //raycast // spherecast // collider
 
-        RaycastHit hitInfo;
-        bool isGrounded = Physics.Raycast(rayCenter, Vector3.down, out hitInfo, rayLength);
+        if (_isGroundedNeedsUpdate)
+        {
+            Vector3 rayCenter = _capsuleCollider.center;
+            float rayLength = _capsuleCollider.bounds.extents.y + 0.1f;
+            float sphereRadius = _capsuleCollider.radius * 0.9f;
 
-        return isGrounded && Vector3.Dot(hitInfo.normal, Vector3.up) > 0.5; //check angle between ray and surface
+            RaycastHit hitInfo;
+            bool isGrounded = Physics.SphereCast(rayCenter, sphereRadius, Vector3.down, out hitInfo, rayLength);
+
+            _isGrounded = isGrounded && Vector3.Dot(hitInfo.normal, Vector3.up) > 0.5; //check angle between ray and surface
+            _isGroundedNeedsUpdate = false;
+        }
+        return _isGrounded;
     }
 }
